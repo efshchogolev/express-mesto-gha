@@ -19,3 +19,17 @@ module.exports.createUser = (req, res) => {
     .then(() => res.send({ message: "Пользователь создан" }))
     .catch((err) => res.status(444).send({ message: "Произошла ошибка" }));
 };
+
+module.exports.updateUserInfo = (req, res) => {
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(req.user._id, { name, about })
+    .then((user) => res.send({ data: user, message: "Информация изменена" }))
+    .catch((err) => res.status(444).send({ massage: "Произошла ошибка" }));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(req.user._id, { avatar })
+    .then((user) => res.send({ data: user, message: "Аватар изменен" }))
+    .catch((err) => res.status(444).send({ massage: "Произошла ошибка" }));
+};
