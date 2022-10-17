@@ -41,7 +41,7 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then(() => res.send({ message: "Пользователь создан" }))
+    .then(() => res.send({ data: { user }, message: "Пользователь создан" }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res

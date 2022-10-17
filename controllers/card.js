@@ -40,6 +40,11 @@ module.exports.deleteCard = (req, res) => {
           .status(NOT_FOUND_ERROR_CODE)
           .send({ message: "Карточка не найдена" });
       }
+      if (err.message === "CastError") {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .send({ message: "Неверный ID" });
+      }
       return res
         .status(DEFAULT_ERROR_CODE)
         .send({ message: "На сервере произошла ошибка", err });
@@ -55,7 +60,7 @@ module.exports.likeCard = (req, res) =>
     .orFail(new Error("Not Found"))
     .then(() => res.send({ message: "Лайк поставлен" }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res
           .status(DATA_ERROR_CODE)
           .send({ message: "Ошибка валидации", err });
@@ -79,7 +84,7 @@ module.exports.dislikeCard = (req, res) =>
     .orFail(new Error("Not Found"))
     .then(() => res.send({ message: "Лайк удален" }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res
           .status(DATA_ERROR_CODE)
           .send({ message: "Ошибка валидации", err });
