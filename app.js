@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userRouter = require("./routes/userRoutes");
 const cardRouter = require("./routes/cardRoutes");
 const bodyParser = require("body-parser");
-const { NOT_FOUND_ERROR_CODE } = require("../utils/constants");
+const { NOT_FOUND_ERROR_CODE } = require("./utils/constants");
 
 const { PORT = 3000, MONGO_URL = "mongodb://localhost:27017/mestodb" } =
   process.env;
