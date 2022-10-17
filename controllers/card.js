@@ -9,7 +9,7 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then(() => res.send({ message: "Карточка добавлена" }))
+    .then((card) => res.send({ message: "Карточка добавлена", data: card }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res
@@ -41,9 +41,7 @@ module.exports.deleteCard = (req, res) => {
           .send({ message: "Карточка не найдена" });
       }
       if (err.message === "CastError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .send({ message: "Неверный ID" });
+        return res.status(DATA_ERROR_CODE).send({ message: "Неверный ID" });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
