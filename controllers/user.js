@@ -1,11 +1,16 @@
 const User = require("../models/user");
+const {
+  DATA_ERROR_CODE,
+  NOT_FOUND_ERROR_CODE,
+  DEFAULT_ERROR_CODE,
+} = require("../utils/constants");
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       return res
-        .status(500)
+        .status(DEFAULT_ERROR_CODE)
         .send({ message: "Не удалось получить данные", err });
     });
 };
@@ -17,13 +22,17 @@ module.exports.getUserById = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === "Not Found") {
-        return res.status(404).send({ message: "Пользователь не найден" });
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .send({ message: "Пользователь не найден" });
       }
       if (err.name === "CastError") {
-        return res.status(400).send({ message: "Некорректный ID", err });
+        return res
+          .status(DATA_ERROR_CODE)
+          .send({ message: "Некорректный ID", err });
       }
       return res
-        .status(500)
+        .status(DEFAULT_ERROR_CODE)
         .send({ message: "На сервере произошла ошибка", err });
     });
 };
@@ -35,10 +44,12 @@ module.exports.createUser = (req, res) => {
     .then(() => res.send({ message: "Пользователь создан" }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: "Ошибка валидации", err });
+        return res
+          .status(DATA_ERROR_CODE)
+          .send({ message: "Ошибка валидации", err });
       }
       return res
-        .status(500)
+        .status(DEFAULT_ERROR_CODE)
         .send({ message: "На сервере произошла ошибка", err });
     });
 };
@@ -49,10 +60,12 @@ module.exports.updateUserInfo = (req, res) => {
     .then((user) => res.send({ data: user, message: "Информация изменена" }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: "Ошибка валидации", err });
+        return res
+          .status(DATA_ERROR_CODE)
+          .send({ message: "Ошибка валидации", err });
       }
       return res
-        .status(500)
+        .status(DEFAULT_ERROR_CODE)
         .send({ massage: "На сервере произошла ошибка", err });
     });
 };
@@ -63,7 +76,9 @@ module.exports.updateUserAvatar = (req, res) => {
     .then((user) => res.send({ data: user, message: "Аватар изменен" }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: "Ошибка валидации", err });
+        return res
+          .status(DATA_ERROR_CODE)
+          .send({ message: "Ошибка валидации", err });
       }
       return res.status(444).send({ massage: "Произошла ошибка", err });
     });
