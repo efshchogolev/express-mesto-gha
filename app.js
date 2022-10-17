@@ -4,7 +4,7 @@ const userRouter = require("./routes/userRoutes");
 const cardRouter = require("./routes/cardRoutes");
 const bodyParser = require("body-parser");
 
-const { PORT = 3333, MONGO_URL = "mongodb://localhost:27017/mestodb" } =
+const { PORT = 3000, MONGO_URL = "mongodb://localhost:27017/mestodb" } =
   process.env;
 
 const app = express();
