@@ -9,7 +9,7 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send({ message: 'Карточка добавлена', data: card }))
+    .then((card) => res.send({ message: 'Карточка добавлена', card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res
@@ -24,14 +24,14 @@ module.exports.createCard = (req, res) => {
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.send({ card }))
     .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(new Error('Not Found'))
-    .then((card) => res.send({ data: card, message: 'Карточка удалена' }))
+    .then((card) => res.send({ card, message: 'Карточка удалена' }))
     .catch((err) => {
       if (err.message === 'Not Found') {
         return res
