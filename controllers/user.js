@@ -8,9 +8,9 @@ const {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send({ data: user }))
-    .catch((err) => res
+    .catch(() => res
       .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'Не удалось получить данные', err }));
+      .send({ message: 'Не удалось получить данные' }));
 };
 
 module.exports.getUserById = (req, res) => {
@@ -27,11 +27,11 @@ module.exports.getUserById = (req, res) => {
       if (err.name === 'CastError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Некорректный ID', err });
+          .send({ message: 'Некорректный ID' });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка', err });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -44,11 +44,11 @@ module.exports.createUser = (req, res) => {
       if (err.name === 'ValidationError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации', err });
+          .send({ message: 'Ошибка валидации' });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка', err });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -64,11 +64,11 @@ module.exports.updateUserInfo = (req, res) => {
       if (err.name === 'ValidationError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации', err });
+          .send({ message: 'Ошибка валидации' });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ massage: 'На сервере произошла ошибка', err });
+        .send({ massage: 'На сервере произошла ошибка' });
     });
 };
 
@@ -84,8 +84,8 @@ module.exports.updateUserAvatar = (req, res) => {
       if (err.name === 'ValidationError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации', err });
+          .send({ message: 'Ошибка валидации' });
       }
-      return res.status(444).send({ massage: 'Произошла ошибка', err });
+      return res.status(DEFAULT_ERROR_CODE).send({ massage: 'Произошла ошибка' });
     });
 };

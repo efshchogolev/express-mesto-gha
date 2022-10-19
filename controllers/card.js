@@ -14,18 +14,18 @@ module.exports.createCard = (req, res) => {
       if (err.name === 'ValidationError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации', err });
+          .send({ message: 'Ошибка валидации' });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка', err });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(DEFAULT_ERROR_CODE).send({ message: 'Произошла ошибка', err }));
+    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteCard = (req, res) => {
@@ -43,7 +43,7 @@ module.exports.deleteCard = (req, res) => {
       }
       return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка', err });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -58,7 +58,7 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
     if (err.name === 'CastError') {
       return res
         .status(DATA_ERROR_CODE)
-        .send({ message: 'Ошибка валидации', err });
+        .send({ message: 'Ошибка валидации' });
     }
     if (err.message === 'Not Found') {
       return res
@@ -67,7 +67,7 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
     }
     return res
       .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'На сервере произошла ошибка', err });
+      .send({ message: 'На сервере произошла ошибка' });
   });
 
 module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
@@ -81,7 +81,7 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
     if (err.name === 'CastError') {
       return res
         .status(DATA_ERROR_CODE)
-        .send({ message: 'Ошибка валидации', err });
+        .send({ message: 'Ошибка валидации' });
     }
     if (err.message === 'Not Found') {
       return res
@@ -90,5 +90,5 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
     }
     return res
       .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'На сервере произошла ошибка', err });
+      .send({ message: 'На сервере произошла ошибка' });
   });
