@@ -1,8 +1,10 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const {
   DATA_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
+  MONGO_DB_CODE,
 } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
@@ -29,22 +31,32 @@ module.exports.getUserById = (req, res) => {
           .status(DATA_ERROR_CODE)
           .send({ message: 'Некорректный ID' });
       }
+      if (err.code === MONGO_DB_CODE) {
+        return res.status(409).send({ message: 'Такой пользователь уже зарегестрирован' });
+      }
       return res
         .status(DEFAULT_ERROR_CODE)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
+// eslint-disable-next-line consistent-return
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  if (!email || !password) {
+    return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
+  }
+  bcrypt.hash(password, 10).then((hash) => User.create({
+    name, about, avatar, email, password: hash,
+  }))
     .then((user) => res.send({ user, message: 'Пользователь создан' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res
           .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации' });
+          .send({ message: 'Ошибка валидации', err });
       }
       return res
         .status(DEFAULT_ERROR_CODE)
