@@ -3,13 +3,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
   DATA_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
   MONGO_DB_CODE,
-  AUTHORIZATION_ERROR_CODE,
 } = require('../utils/constants');
 const NotFoundError = require('../utils/errors/notFoundError');
 const DataError = require('../utils/errors/dataError');
 const ConflictError = require('../utils/errors/conflictError');
+const AuthorizationError = require('../utils/errors/authError');
 
 module.exports.getUsers = (req, res, next) => {
   console.log(req.user._id);
@@ -48,7 +47,7 @@ module.exports.createUser = (req, res, next) => {
     return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
   }
   bcrypt.hash(password, 10).then((hash) => User.create({
-    name, about, avatar, email, password: hash,
+    email, password: hash, name, about, avatar,
   }))
     .then((user) => res.send({ user, message: 'Пользователь создан' }))
     .catch((err) => {
@@ -65,26 +64,20 @@ module.exports.createUser = (req, res, next) => {
 // eslint-disable-next-line consistent-return
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
-  }
-  User.findOne({ email }).select('+password').then((user) => bcrypt.compare(password, user.password)
-    .then(
-      // eslint-disable-next-line consistent-return
-      (match) => {
-        if (!match) {
-          return res.status(AUTHORIZATION_ERROR_CODE).send({ message: 'ошибка авторизации' });
-        }
-        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-        if (!token) {
-          return res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка с токеном' });
-        }
-        res.cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-        }).end();
-      },
-    )).catch((err) => next(err));
+  User.checkUserAuth(email, password).then((user) => {
+    if (!user) {
+      return Promise.reject(new AuthorizationError('Неправильные почта или пароль'));
+    }
+    const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+    res.cookie('jwt', token, {
+      maxAge: 3600000 * 24 * 7,
+      httpOnly: true,
+    });
+  })
+    .then(() => {
+      res.send({ messgae: 'Авторизация успешна' });
+    })
+    .catch((err) => next(err));
 };
 
 module.exports.updateUserInfo = (req, res, next) => {
