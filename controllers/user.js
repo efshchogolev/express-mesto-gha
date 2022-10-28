@@ -10,11 +10,15 @@ const {
 } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
-  const token = req.cookies.jwt;
-  jwt.verify(token, 'some-secret-key');
-
   User.find({})
     .then((user) => res.send({ user }))
+    .catch(() => res
+      .status(DEFAULT_ERROR_CODE)
+      .send({ message: 'Не удалось получить данные' }));
+};
+
+module.exports.getMe = (req, res) => {
+  User.findOne({ _id: req.user._id }).then((user) => res.send({ user }))
     .catch(() => res
       .status(DEFAULT_ERROR_CODE)
       .send({ message: 'Не удалось получить данные' }));
@@ -75,8 +79,9 @@ module.exports.login = (req, res) => {
   if (!email || !password) {
     return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
   }
-  User.findOne({ email }).then((user) => bcrypt.compare(password, user.password)
+  User.findOne({ email }).select('+password').then((user) => bcrypt.compare(password, user.password)
     .then(
+      // eslint-disable-next-line consistent-return
       (match) => {
         if (!match) {
           return res.status(AUTHORIZATION_ERROR_CODE).send({ message: 'ошибка авторизации' });
