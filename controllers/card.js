@@ -1,94 +1,76 @@
 const Card = require('../models/card');
-const {
-  DATA_ERROR_CODE,
-  NOT_FOUND_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
-} = require('../utils/constants');
 
-module.exports.createCard = (req, res) => {
+const NotFoundError = require('../errors/notFoundError');
+const DataError = require('../errors/dataError');
+
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ message: 'Карточка добавлена', card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res
-          .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации' });
+        next(new DataError('Ошибка валидации'));
+      } else {
+        next(err);
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ card }))
-    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'Произошла ошибка' }));
+    .catch((err) => next(err));
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(new Error('Not Found'))
     .then((card) => res.send({ card, message: 'Карточка удалена' }))
     .catch((err) => {
       if (err.message === 'Not Found') {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .send({ message: 'Карточка не найдена' });
+        next(new NotFoundError('Карточка не найдена'));
+      } else if (err.message === 'CastError') {
+        next(new DataError('Неверный ID'));
+      } else {
+        next(err);
       }
-      if (err.message === 'CastError') {
-        return res.status(DATA_ERROR_CODE).send({ message: 'Неверный ID' });
-      }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
-module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('Not Found'))
+  .orFail(new NotFoundError('Карточка не найдена'))
   .then(() => res.send({ message: 'Лайк поставлен' }))
   .catch((err) => {
     if (err.name === 'CastError') {
-      return res
-        .status(DATA_ERROR_CODE)
-        .send({ message: 'Ошибка валидации' });
+      next(new DataError('Ошибка валидации'));
+    } else if (err.message === 'Not Found') {
+      // next(new NotFoundError('Карточка не найдена'));
+    } else {
+      next(err);
     }
-    if (err.message === 'Not Found') {
-      return res
-        .status(NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Карточка не найдена' });
-    }
-    return res
-      .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'На сервере произошла ошибка' });
   });
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('Not Found'))
+  .orFail(new NotFoundError('Карточка не найдена'))
   .then(() => res.send({ message: 'Лайк удален' }))
   .catch((err) => {
     if (err.name === 'CastError') {
-      return res
-        .status(DATA_ERROR_CODE)
-        .send({ message: 'Ошибка валидации' });
+      next(new DataError('Ошибка валидации'));
+    } else {
+      next(err);
     }
-    if (err.message === 'Not Found') {
-      return res
-        .status(NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Карточка не найдена' });
-    }
-    return res
-      .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'На сервере произошла ошибка' });
+    // if (err.message === 'Not Found') {
+    //   return res
+    //     .status(NOT_FOUND_ERROR_CODE)
+    //     .send({ message: 'Карточка не найдена' });
+    // }
   });

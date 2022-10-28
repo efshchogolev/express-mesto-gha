@@ -3,54 +3,44 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
   DATA_ERROR_CODE,
-  NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
   MONGO_DB_CODE,
   AUTHORIZATION_ERROR_CODE,
 } = require('../utils/constants');
+const NotFoundError = require('../errors/notFoundError');
+const DataError = require('../errors/dataError');
+const ConflictError = require('../errors/conflictError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
+  console.log(req.user._id);
   User.find({})
     .then((user) => res.send({ user }))
-    .catch(() => res
-      .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'Не удалось получить данные' }));
+    .catch((err) => next(err));
 };
 
-module.exports.getMe = (req, res) => {
+module.exports.getMe = (req, res, next) => {
   User.findOne({ _id: req.user._id }).then((user) => res.send({ user }))
-    .catch(() => res
-      .status(DEFAULT_ERROR_CODE)
-      .send({ message: 'Не удалось получить данные' }));
+    .catch((err) => next(err));
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail(new Error('Not Found'))
 
     .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.message === 'Not Found') {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
+      } else if (err.name === 'CastError') {
+        next(new DataError('Некорректный ID'));
+      } else {
+        next(err);
       }
-      if (err.name === 'CastError') {
-        return res
-          .status(DATA_ERROR_CODE)
-          .send({ message: 'Некорректный ID' });
-      }
-      if (err.code === MONGO_DB_CODE) {
-        return res.status(409).send({ message: 'Такой пользователь уже зарегестрирован' });
-      }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
 // eslint-disable-next-line consistent-return
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -63,18 +53,17 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send({ user, message: 'Пользователь создан' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res
-          .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации', err });
+        next(new DataError('Ошибка валидации'));
+      } else if (err.code === MONGO_DB_CODE) {
+        next(new ConflictError('Такой пользователь уже зарегестрирован'));
+      } else {
+        next(err);
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
 // eslint-disable-next-line consistent-return
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
@@ -90,16 +79,15 @@ module.exports.login = (req, res) => {
         if (!token) {
           return res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка с токеном' });
         }
-        // return res.status(200).send({ data: token });
         res.cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
         }).end();
       },
-    )).catch((err) => res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка', err }));
+    )).catch((err) => next(err));
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -109,17 +97,14 @@ module.exports.updateUserInfo = (req, res) => {
     .then((user) => res.send({ user, message: 'Информация изменена' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res
-          .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации' });
+        next(new DataError('Ошибка валидации'));
+      } else {
+        next(err);
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ massage: 'На сервере произошла ошибка' });
     });
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -129,10 +114,9 @@ module.exports.updateUserAvatar = (req, res) => {
     .then((user) => res.send({ user, message: 'Аватар изменен' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res
-          .status(DATA_ERROR_CODE)
-          .send({ message: 'Ошибка валидации' });
+        next(new DataError('Ошибка валидации'));
+      } else {
+        next(err);
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ massage: 'Произошла ошибка' });
     });
 };
