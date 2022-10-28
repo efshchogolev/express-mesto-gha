@@ -1,4 +1,4 @@
-const { DATA_ERROR_CODE } = require('../utils/constants');
+const { DATA_ERROR_CODE } = require('../constants');
 
 class DataError extends Error {
   constructor(message) {

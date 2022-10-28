@@ -7,6 +7,7 @@ const cardRouter = require('./routes/cardRoutes');
 const { tokenAuth } = require('./middlewares/auth');
 const { NOT_FOUND_ERROR_CODE } = require('./utils/constants');
 const { login, createUser } = require('./controllers/user');
+const { validateLogin, validateRegistration } = require('./utils/validators/userValidator');
 
 const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
 
@@ -16,8 +17,8 @@ app.use(cookieParser());
 
 mongoose.connect(MONGO_URL, { autoIndex: true });
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateRegistration, createUser);
 
 app.use('/users', tokenAuth, userRouter);
 app.use('/cards', tokenAuth, cardRouter);
@@ -36,6 +37,7 @@ app.use((err, req, res, next) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
+  next();
 });
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

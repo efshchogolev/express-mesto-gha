@@ -7,9 +7,9 @@ const {
   MONGO_DB_CODE,
   AUTHORIZATION_ERROR_CODE,
 } = require('../utils/constants');
-const NotFoundError = require('../errors/notFoundError');
-const DataError = require('../errors/dataError');
-const ConflictError = require('../errors/conflictError');
+const NotFoundError = require('../utils/errors/notFoundError');
+const DataError = require('../utils/errors/dataError');
+const ConflictError = require('../utils/errors/conflictError');
 
 module.exports.getUsers = (req, res, next) => {
   console.log(req.user._id);

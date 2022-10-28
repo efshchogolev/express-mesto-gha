@@ -1,4 +1,4 @@
-const { AUTHORIZATION_ERROR_CODE } = require('../utils/constants');
+const { AUTHORIZATION_ERROR_CODE } = require('../constants');
 
 class AuthorizationError extends Error {
   constructor(message) {

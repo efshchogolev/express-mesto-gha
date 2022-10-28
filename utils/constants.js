@@ -5,6 +5,7 @@ const AUTHORIZATION_ERROR_CODE = 401;
 const MONGO_DB_CODE = 11000;
 const FORBIDDEN_ERROR_CODE = 403;
 const CONFLICT_ERROR_CODE = 409;
+const URL_REG_EXP = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 module.exports = {
   DATA_ERROR_CODE,
@@ -14,4 +15,5 @@ module.exports = {
   FORBIDDEN_ERROR_CODE,
   AUTHORIZATION_ERROR_CODE,
   CONFLICT_ERROR_CODE,
+  URL_REG_EXP,
 };
