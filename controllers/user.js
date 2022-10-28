@@ -1,13 +1,18 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
   DATA_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
   MONGO_DB_CODE,
+  AUTHORIZATION_ERROR_CODE,
 } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
+  const token = req.cookies.jwt;
+  jwt.verify(token, 'some-secret-key');
+
   User.find({})
     .then((user) => res.send({ user }))
     .catch(() => res
@@ -62,6 +67,31 @@ module.exports.createUser = (req, res) => {
         .status(DEFAULT_ERROR_CODE)
         .send({ message: 'На сервере произошла ошибка' });
     });
+};
+
+// eslint-disable-next-line consistent-return
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
+  }
+  User.findOne({ email }).then((user) => bcrypt.compare(password, user.password)
+    .then(
+      (match) => {
+        if (!match) {
+          return res.status(AUTHORIZATION_ERROR_CODE).send({ message: 'ошибка авторизации' });
+        }
+        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+        if (!token) {
+          return res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка с токеном' });
+        }
+        // return res.status(200).send({ data: token });
+        res.cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        }).end();
+      },
+    )).catch((err) => res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка', err }));
 };
 
 module.exports.updateUserInfo = (req, res) => {
