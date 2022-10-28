@@ -64,6 +64,7 @@ module.exports.createUser = (req, res, next) => {
 // eslint-disable-next-line consistent-return
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
+  // eslint-disable-next-line consistent-return
   User.checkUserAuth(email, password).then((user) => {
     if (!user) {
       return Promise.reject(new AuthorizationError('Неправильные почта или пароль'));
