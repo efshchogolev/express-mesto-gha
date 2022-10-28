@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const userRouter = require('./routes/userRoutes');
 const cardRouter = require('./routes/cardRoutes');
 const { tokenAuth } = require('./middlewares/auth');
@@ -27,6 +28,9 @@ app.use('*', (req, res) => {
     message: 'Неверный адрес',
   });
 });
+
+app.use(errors());
+
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
