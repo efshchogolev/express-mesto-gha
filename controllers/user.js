@@ -11,7 +11,6 @@ const ConflictError = require('../utils/errors/conflictError');
 const AuthorizationError = require('../utils/errors/authError');
 
 module.exports.getUsers = (req, res, next) => {
-  console.log(req.user._id);
   User.find({})
     .then((user) => res.send({ user }))
     .catch((err) => next(err));
@@ -43,13 +42,14 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (!email || !password) {
-    return res.status(DATA_ERROR_CODE).send({ message: 'Поле пароля или пользователя пустое' });
-  }
   bcrypt.hash(password, 10).then((hash) => User.create({
     email, password: hash, name, about, avatar,
   }))
-    .then((user) => res.send({ user, message: 'Пользователь создан' }))
+    .then(() => res.status(200).send({
+      data: {
+        name, about, avatar, email,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new DataError('Ошибка валидации'));
@@ -66,9 +66,6 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   // eslint-disable-next-line consistent-return
   User.checkUserAuth(email, password).then((user) => {
-    if (!user) {
-      return Promise.reject(new AuthorizationError('Неправильные почта или пароль'));
-    }
     const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
     res.cookie('jwt', token, {
       maxAge: 3600000 * 24 * 7,
@@ -88,7 +85,7 @@ module.exports.updateUserInfo = (req, res, next) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .then((user) => res.send({ user, message: 'Информация изменена' }))
+    .then((user) => res.status(200).send({ user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new DataError('Ошибка валидации'));
@@ -105,7 +102,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
     { avatar },
     { new: true, runValidators: true },
   )
-    .then((user) => res.send({ user, message: 'Аватар изменен' }))
+    .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new DataError('Ошибка валидации'));

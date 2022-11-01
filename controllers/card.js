@@ -7,7 +7,7 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send({ message: 'Карточка добавлена', card }))
+    .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new DataError('Ошибка валидации'));
@@ -48,8 +48,6 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
   .catch((err) => {
     if (err.name === 'CastError') {
       next(new DataError('Ошибка валидации'));
-    } else if (err.message === 'Not Found') {
-      // next(new NotFoundError('Карточка не найдена'));
     } else {
       next(err);
     }
@@ -68,9 +66,4 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
     } else {
       next(err);
     }
-    // if (err.message === 'Not Found') {
-    //   return res
-    //     .status(NOT_FOUND_ERROR_CODE)
-    //     .send({ message: 'Карточка не найдена' });
-    // }
   });
