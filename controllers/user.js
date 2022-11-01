@@ -2,13 +2,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
-  DATA_ERROR_CODE,
   MONGO_DB_CODE,
 } = require('../utils/constants');
 const NotFoundError = require('../utils/errors/notFoundError');
 const DataError = require('../utils/errors/dataError');
 const ConflictError = require('../utils/errors/conflictError');
-const AuthorizationError = require('../utils/errors/authError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
