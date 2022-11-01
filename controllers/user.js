@@ -7,7 +7,6 @@ const {
 const NotFoundError = require('../utils/errors/notFoundError');
 const DataError = require('../utils/errors/dataError');
 const ConflictError = require('../utils/errors/conflictError');
-const AuthorizationError = require('../utils/errors/authError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -71,7 +70,6 @@ module.exports.login = (req, res, next) => {
       httpOnly: true,
     });
   })
-    .orFail(next(new AuthorizationError('Такого пользователя не существует')))
     .then(() => {
       res.send({ messgae: 'Авторизация успешна' });
     })

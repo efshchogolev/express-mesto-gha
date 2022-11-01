@@ -67,9 +67,6 @@ userSchema.statics.checkUserAuth = function (email, password) {
           }
           return user;
         });
-    })
-    .catch((err) => {
-      console.log(err);
     });
 };
 
