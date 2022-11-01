@@ -23,7 +23,7 @@ app.post('/signup', validateRegistration, createUser);
 
 app.use('/users', tokenAuth, userRouter);
 app.use('/cards', tokenAuth, cardRouter);
-app.use('*', (req, res) => {
+app.use('*', tokenAuth, (req, res) => {
   res.status(NOT_FOUND_ERROR_CODE).send({
     message: 'Неверный адрес',
   });
