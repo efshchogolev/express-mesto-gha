@@ -9,14 +9,14 @@ const { validateLogin, validateRegistration } = require('../utils/validators/use
 
 router.post('/signin', validateLogin, login);
 router.post('/signup', validateRegistration, createUser);
+router.get('/signout', (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+});
 
 router.use('/users', tokenAuth, userRouter);
 router.use('/cards', tokenAuth, cardRouter);
 router.use('*', tokenAuth, (req, res, next) => {
   next(new NotFoundError('Неверный адрес'));
-  // res.status(NOT_FOUND_ERROR_CODE).send({
-  //   message: 'Неверный адрес',
-  // });
 });
 
 module.exports = router;
